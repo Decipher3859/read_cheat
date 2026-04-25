@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Bionic Reading</title>
+    <link rel="stylesheet" href="popup.css" />
+  </head>
+  <body>
+    <main class="popup">
+      <h1>Bionic Reading</h1>
+      <label class="row">
+        <span>Enable extension</span>
+        <input id="enabled" type="checkbox" />
+      </label>
+
+      <label class="range">
+        <span>Emphasis ratio</span>
+        <input id="emphasisRatio" type="range" min="0.2" max="0.8" step="0.05" />
+        <output id="ratioValue">0.45</output>
+      </label>
+      <button id="download-html" type="button">Download HTML</button>
+    </main>
+
+    <script src="popup.js"></script>
+  </body>
+</html>

@@ -1,0 +1,41 @@
+{
+  "manifest_version": 3,
+  "name": "ReadCheat",
+  "version": "0.1.0",
+  "description": "Browser extension scaffold for experimenting with bionic reading on webpages.",
+  "browser_specific_settings": {
+    "gecko": {
+      "id": "read_cheat@example.local",
+      "strict_min_version": "128.0"
+    }
+  },
+  "permissions": [
+    "storage",
+    "activeTab",
+    "scripting"
+  ],
+  "host_permissions": [
+    "<all_urls>"
+  ],
+  "background": {
+    "scripts": [
+      "src/background.js"
+    ]
+  },
+  "action": {
+    "default_title": "Bionic Reading",
+    "default_popup": "popup/popup.html"
+  },
+  "options_page": "options/options.html",
+  "content_scripts": [
+    {
+      "matches": [
+        "<all_urls>"
+      ],
+      "js": [
+        "src/content.js"
+      ],
+      "run_at": "document_idle"
+    }
+  ]
+}
