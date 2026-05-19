@@ -1,5 +1,5 @@
 document
-  .getElementById("download-html")
+  .getElementById("start-bionic-reading")
   .addEventListener("click", handleDownloadClick);
 
 async function handleDownloadClick() {
