@@ -24,3 +24,5 @@ We started with this idea when we were introduced to bionic reading. In the long
 - Building a solid code base
 - Implementing Bionic Reading logic
 - Implementing extensions menu
+
+Mark ist auch dabei

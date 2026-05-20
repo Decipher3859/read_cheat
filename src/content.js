@@ -1,4 +1,7 @@
 const wordRegex = /\p{L}/u;
+let emphasisRatio = 0.45;
+
+// --- LISTENER ---
 
 browser.runtime.onMessage.addListener((message) => {
   if (message?.type !== "download-text-content") {
@@ -9,6 +12,14 @@ browser.runtime.onMessage.addListener((message) => {
   return Promise.resolve({ ok: true });
 });
 
+browser.runtime.onMessage.addListener((message) => {
+  if (message.type === "emphasisRatioValue") {
+    emphasisRatio = message.value;
+    readBionic();
+  }
+});
+
+// --- DOM MANIPULATION ---
 function readBionic() {
   getTextContent(document.body);
 }
@@ -19,59 +30,56 @@ function getTextContent(node) {
   }
 
   if (node.nodeType === Node.TEXT_NODE) {
-    node.textContent = injectDOM(node.textContent);
+    const fragment = injectDOM(node.textContent);
+
+    if (fragment) {
+      node.replaceWith(fragment);
+    }
+
+    return;
   }
 
   if (node.nodeType !== Node.ELEMENT_NODE) {
     return;
   }
 
-  for (const child of node.childNodes) {
+  if (["SCRIPT", "STYLE", "NOSCRIPT", "TEXTAREA"].includes(node.tagName)) {
+    return;
+  }
+
+  for (const child of [...node.childNodes]) {
     getTextContent(child);
   }
 }
 
 function injectDOM(textContent) {
   if (!textContent) {
-    return textContent;
+    return null;
   }
 
-  let newTextContent = "";
+  const fragment = document.createDocumentFragment();
   let currentIndex = 0;
 
   while (currentIndex < textContent.length) {
     const wordStart = identifyWordStart(textContent, currentIndex);
 
     if (wordStart === -1) {
-      newTextContent += textContent.slice(currentIndex);
+      fragment.append(document.createTextNode(textContent.slice(currentIndex)));
       break;
     }
 
-    newTextContent += textContent.slice(currentIndex, wordStart);
+    fragment.append(
+      document.createTextNode(textContent.slice(currentIndex, wordStart)),
+    );
 
     const wordEnd = identifyWordEnd(textContent, wordStart);
     const word = textContent.slice(wordStart, wordEnd);
 
-    newTextContent += manipulateString(word);
+    fragment.append(manipulateString(word));
     currentIndex = wordEnd;
   }
 
-  return newTextContent;
-}
-
-function downloadTextContent(textContent) {
-  if (!textContent) {
-    return;
-  }
-
-  const blob = new Blob([textContent], { type: "text/plain" });
-  const link = document.createElement("a");
-
-  link.href = URL.createObjectURL(blob);
-  link.download = "page.txt";
-  link.click();
-
-  URL.revokeObjectURL(link.href);
+  return fragment;
 }
 
 function identifyWordStart(textContent, startIndex = 0) {
@@ -94,6 +102,26 @@ function identifyWordEnd(textContent, wordStart) {
   return wordEnd;
 }
 
-function manipulateString(word) {
-  return `${word}${word.length}`;
+function manipulateString(word, emphasisRatio = 0.45) {
+  let emphasizedCharCount = emphasisRatio * word.length;
+
+  if (!Number.isInteger(emphasizedCharCount)) {
+    emphasizedCharCount = Math.round(emphasizedCharCount);
+  }
+
+  emphasizedCharCount = Math.max(1, emphasizedCharCount);
+
+  const emphasizedPart = word.slice(0, emphasizedCharCount);
+  const remainingPart = word.slice(emphasizedCharCount);
+  const fragment = document.createDocumentFragment();
+  const strongElement = document.createElement("strong");
+
+  strongElement.textContent = emphasizedPart;
+  fragment.append(strongElement);
+
+  if (remainingPart) {
+    fragment.append(document.createTextNode(remainingPart));
+  }
+
+  return fragment;
 }
